@@ -14,6 +14,4 @@
  limitations under the License.
 */
 
-library open_location_code;
-
 export 'src/open_location_code.dart';

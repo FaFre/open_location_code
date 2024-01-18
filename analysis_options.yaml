@@ -11,18 +11,19 @@
 # (the recommended set includes the core lints).
 # The core lints are also what is used by pub.dev for scoring packages.
 
-include: package:lints/recommended.yaml
-
+include: package:lint/package.yaml
 # Uncomment the following section to specify additional rules.
 
-# linter:
-#   rules:
-#     - camel_case_types
+linter:
+  rules:
+    unawaited_futures: true
+    discarded_futures: true
+    collection_methods_unrelated_type: true
+    parameter_assignments: false    
 
-# analyzer:
-#   exclude:
-#     - path/to/excluded/files/**
-
+analyzer:
+  exclude:
+    - "**.g.dart"
 # For more information about the core and recommended set of lints, see
 # https://dart.dev/go/core-lints
 

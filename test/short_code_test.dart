@@ -20,18 +20,18 @@ import 'utils.dart';
 
 // full code,lat,lng,shortcode
 void checkShortCode(String csvLine) {
-  var elements = csvLine.split(',');
-  var code = elements[0];
-  num lat = double.parse(elements[1]);
-  num lng = double.parse(elements[2]);
-  var shortCode = elements[3];
-  var testType = elements[4];
+  final elements = csvLine.split(',');
+  final code = elements[0];
+  final lat = double.parse(elements[1]);
+  final lng = double.parse(elements[2]);
+  final shortCode = elements[3];
+  final testType = elements[4];
   if (testType == 'B' || testType == 'S') {
-    var short = olc.shorten(code, lat, lng);
+    final short = olc.shorten(code, lat, lng);
     expect(short, equals(shortCode));
   }
   if (testType == 'B' || testType == 'R') {
-    var expanded = olc.recoverNearest(shortCode, lat, lng);
+    final expanded = olc.recoverNearest(shortCode, lat, lng);
     expect(expanded, equals(code));
   }
 }

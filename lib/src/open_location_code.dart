@@ -14,9 +14,9 @@
  limitations under the License.
 */
 
-library open_location_code.src.open_location_code;
-
 import 'dart:math';
+
+import 'package:latlong2/latlong.dart';
 
 /// A separator used to break the code into two parts to aid memorability.
 const separator = '+'; // 43 Ascii
@@ -105,11 +105,11 @@ bool _matchesPattern(String string, Pattern pattern) =>
     string.contains(pattern);
 
 bool isValid(String code) {
-  if (code == null || code.length == 1) {
+  if (code.length == 1) {
     return false;
   }
 
-  var separatorIndex = code.indexOf(separator);
+  final separatorIndex = code.indexOf(separator);
   // There must be a single separator at an even index and position should be < SEPARATOR_POSITION.
   if (separatorIndex == -1 ||
       separatorIndex != code.lastIndexOf(separator) ||
@@ -130,11 +130,11 @@ bool isValid(String code) {
       return false;
     }
     // There can only be one group and it must have even length.
-    var padMatch = RegExp('($padding+)').allMatches(code).toList();
+    final padMatch = RegExp('($padding+)').allMatches(code).toList();
     if (padMatch.length != 1) {
       return false;
     }
-    var matchLength = padMatch.first.group(0).length;
+    final matchLength = padMatch.first.group(0)!.length;
     if (matchLength.isOdd || matchLength > separatorPosition - 2) {
       return false;
     }
@@ -150,8 +150,8 @@ bool isValid(String code) {
   }
 
   // Check code contains only valid characters.
-  var filterCallback = (ch) => !(ch > _decode.length || _decode[ch] < -1);
-  return code.codeUnits.every(filterCallback);
+  return code.codeUnits
+      .every((ch) => !(ch > _decode.length || _decode[ch] < -1));
 }
 
 num clipLatitude(num latitude) => latitude.clamp(-90.0, 90.0);
@@ -212,14 +212,14 @@ bool isFull(String code) {
     return false;
   }
   // Work out what the first latitude character indicates for latitude.
-  var firstLatValue = _decode[code.codeUnitAt(0)] * encodingBase;
+  final firstLatValue = _decode[code.codeUnitAt(0)] * encodingBase;
   if (firstLatValue >= latitudeMax * 2) {
     // The code would decode to a latitude of >= 90 degrees.
     return false;
   }
   if (code.length > 1) {
     // Work out what the first longitude character indicates for longitude.
-    var firstLngValue = _decode[code.codeUnitAt(1)] * encodingBase;
+    final firstLngValue = _decode[code.codeUnitAt(1)] * encodingBase;
     if (firstLngValue >= longitudeMax * 2) {
       // The code would decode to a longitude of >= 180 degrees.
       return false;
@@ -276,9 +276,9 @@ String encode(num latitude, num longitude, {int codeLength = pairCodeLength}) {
   // Compute the grid part of the code if necessary.
   if (codeLength > pairCodeLength) {
     for (var i = 0; i < maxDigitCount - pairCodeLength; i++) {
-      var lat_digit = latVal % gridRows;
-      var lng_digit = lngVal % gridColumns;
-      var ndx = lat_digit * gridColumns + lng_digit;
+      final latDigit = latVal % gridRows;
+      final lngDigit = lngVal % gridColumns;
+      final ndx = latDigit * gridColumns + lngDigit;
       code = codeAlphabet[ndx] + code;
       // Note! Integer division.
       latVal ~/= gridRows;
@@ -318,7 +318,8 @@ String encode(num latitude, num longitude, {int codeLength = pairCodeLength}) {
 CodeArea decode(String code) {
   if (!isFull(code)) {
     throw ArgumentError(
-        'Passed Open Location Code is not a valid full code: $code');
+      'Passed Open Location Code is not a valid full code: $code',
+    );
   }
   // Strip out separator character (we've already established the code is
   // valid so the maximum is one), padding characters and convert to upper
@@ -355,9 +356,9 @@ CodeArea decode(String code) {
     // How many digits do we have to process?
     digits = min(code.length, maxDigitCount);
     for (var i = pairCodeLength; i < digits; i++) {
-      var digitVal = codeAlphabet.indexOf(code[i]);
-      var row = digitVal ~/ gridColumns;
-      var col = digitVal % gridColumns;
+      final digitVal = codeAlphabet.indexOf(code[i]);
+      final row = digitVal ~/ gridColumns;
+      final col = digitVal % gridColumns;
       gridLat += row * rowpv;
       gridLng += col * colpv;
       if (i < digits - 1) {
@@ -370,11 +371,16 @@ CodeArea decode(String code) {
     lngPrecision = colpv / finalLngPrecision;
   }
   // Merge the values from the normal and extra precision parts of the code.
-  var lat = normalLat / pairPrecision + gridLat / finalLatPrecision;
-  var lng = normalLng / pairPrecision + gridLng / finalLngPrecision;
+  final lat = normalLat / pairPrecision + gridLat / finalLatPrecision;
+  final lng = normalLng / pairPrecision + gridLng / finalLngPrecision;
   // Return the code area.
-  return CodeArea(lat, lng, lat + latPrecision, lng + lngPrecision,
-      min(code.length, maxDigitCount));
+  return CodeArea(
+    lat,
+    lng,
+    lat + latPrecision,
+    lng + lngPrecision,
+    min(code.length, maxDigitCount),
+  );
 }
 
 /// Recover the nearest matching code to a specified location.
@@ -412,7 +418,10 @@ CodeArea decode(String code) {
 /// passed code was not a valid short code, but was a valid full code, it is
 /// returned unchanged.
 String recoverNearest(
-    String shortCode, num referenceLatitude, num referenceLongitude) {
+  String shortCode,
+  num referenceLatitude,
+  num referenceLongitude,
+) {
   if (!isShort(shortCode)) {
     if (isFull(shortCode)) {
       return shortCode.toUpperCase();
@@ -427,16 +436,17 @@ String recoverNearest(
   // Clean up the passed code.
   shortCode = shortCode.toUpperCase();
   // Compute the number of digits we need to recover.
-  var paddingLength = separatorPosition - shortCode.indexOf(separator);
+  final paddingLength = separatorPosition - shortCode.indexOf(separator);
   // The resolution (height and width) of the padded area in degrees.
-  var resolution = pow(encodingBase, 2 - (paddingLength / 2));
+  final resolution = pow(encodingBase, 2 - (paddingLength / 2));
   // Distance from the center to an edge (in degrees).
-  var halfResolution = resolution / 2.0;
+  final halfResolution = resolution / 2.0;
 
   // Use the reference location to pad the supplied short code and decode it.
-  var codeArea = decode(encode(referenceLatitude, referenceLongitude)
-          .substring(0, paddingLength) +
-      shortCode);
+  final codeArea = decode(
+    encode(referenceLatitude, referenceLongitude).substring(0, paddingLength) +
+        shortCode,
+  );
   var centerLatitude = codeArea.center.latitude;
   var centerLongitude = codeArea.center.longitude;
 
@@ -462,8 +472,11 @@ String recoverNearest(
     centerLongitude += resolution;
   }
 
-  return encode(centerLatitude, centerLongitude,
-      codeLength: codeArea.codeLength);
+  return encode(
+    centerLatitude,
+    centerLongitude,
+    codeLength: codeArea.codeLength,
+  );
 }
 
 /// Remove characters from the start of an OLC [code].
@@ -490,7 +503,7 @@ String shorten(String code, num latitude, num longitude) {
     throw ArgumentError('Cannot shorten padded codes: $code');
   }
   code = code.toUpperCase();
-  var codeArea = decode(code);
+  final codeArea = decode(code);
   if (codeArea.codeLength < minTrimmableCodeLen) {
     throw RangeError('Code length must be at least $minTrimmableCodeLen');
   }
@@ -498,8 +511,10 @@ String shorten(String code, num latitude, num longitude) {
   latitude = clipLatitude(latitude);
   longitude = normalizeLongitude(longitude);
   // How close are the latitude and longitude to the code center.
-  var range = max((codeArea.center.latitude - latitude).abs(),
-      (codeArea.center.longitude - longitude).abs());
+  final range = max(
+    (codeArea.center.latitude - latitude).abs(),
+    (codeArea.center.longitude - longitude).abs(),
+  );
   for (var i = pairResolutions.length - 2; i >= 1; i--) {
     // Check if we're close enough to shorten. The range must be less than 1/2
     // the resolution to shorten at all, and we want to allow some safety, so
@@ -518,6 +533,7 @@ String shorten(String code, num latitude, num longitude) {
 /// upper right corners and the center of the bounding box for the area the
 /// code represents.
 class CodeArea {
+  // ignore: avoid_multiple_declarations_per_line
   final num south, west, north, east;
   final LatLng center;
   final int codeLength;
@@ -532,23 +548,10 @@ class CodeArea {
   /// *[east]: The east in degrees.
   /// *[code_length]: The number of significant characters that were in the code.
   /// This excludes the separator.
-  CodeArea(num south, num west, num north, num east, this.codeLength)
-      : south = south,
-        west = west,
-        north = north,
-        east = east,
-        center = LatLng((south + north) / 2, (west + east) / 2);
+  CodeArea(this.south, this.west, this.north, this.east, this.codeLength)
+      : center = LatLng((south + north) / 2, (west + east) / 2);
 
   @override
   String toString() =>
       'CodeArea(south:$south, west:$west, north:$north, east:$east, codelen: $codeLength)';
-}
-
-/// Coordinates of a point identified by its [latitude] and [longitude] in
-/// degrees.
-class LatLng {
-  final num latitude, longitude;
-  LatLng(this.latitude, this.longitude);
-  @override
-  String toString() => 'LatLng($latitude, $longitude)';
 }

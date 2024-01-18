@@ -11,9 +11,9 @@ List<String> getCsvLines(String fileName) {
 
 // Requires test csv files in a test_data directory under open location code project root.
 String testDataPath() {
-  var projectRoot = Directory.current.parent;
+  final projectRoot = Directory.current;
 
-  return path.absolute(projectRoot.path, 'test_data');
+  return path.absolute(projectRoot.path, 'test', 'fixtures');
 }
 
 String cvsWithAbsolutePath(String file) => path.absolute(testDataPath(), file);

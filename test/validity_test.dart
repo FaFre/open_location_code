@@ -20,11 +20,11 @@ import 'utils.dart';
 
 // code,isValid,isShort,isFull
 void checkValidity(String csvLine) {
-  var elements = csvLine.split(',');
-  var code = elements[0];
-  var isValid = elements[1] == 'true';
-  var isShort = elements[2] == 'true';
-  var isFull = elements[3] == 'true';
+  final elements = csvLine.split(',');
+  final code = elements[0];
+  final isValid = elements[1] == 'true';
+  final isShort = elements[2] == 'true';
+  final isFull = elements[3] == 'true';
   expect(olc.isValid(code), equals(isValid));
   expect(olc.isShort(code), equals(isShort));
   expect(olc.isFull(code), equals(isFull));

@@ -20,12 +20,12 @@ import 'utils.dart';
 
 // code,lat,lng,latLo,lngLo,latHi,lngHi
 void checkEncodeDecode(String csvLine) {
-  var elements = csvLine.split(',');
-  num lat = double.parse(elements[0]);
-  num lng = double.parse(elements[1]);
-  num len = int.parse(elements[2]);
-  var want = elements[3];
-  var got = olc.encode(lat, lng, codeLength: len);
+  final elements = csvLine.split(',');
+  final lat = double.parse(elements[0]);
+  final lng = double.parse(elements[1]);
+  final len = int.parse(elements[2]);
+  final want = elements[3];
+  final got = olc.encode(lat, lng, codeLength: len);
   expect(got, equals(want));
 }
 
@@ -36,18 +36,18 @@ void main() {
 
   test('MaxCodeLength', () {
     // Check that we do not return a code longer than is valid.
-    var code = olc.encode(51.3701125, -10.202665625, codeLength: 1000000);
-    var area = olc.decode(code);
+    final code = olc.encode(51.3701125, -10.202665625, codeLength: 1000000);
+    final area = olc.decode(code);
     expect(code.length, 16);
     expect(area.codeLength, 15);
     expect(olc.isValid(code), true);
 
     // Extend the code with a valid character and make sure it is still valid.
-    var tooLongCode = code + 'W';
+    var tooLongCode = '${code}W';
     expect(olc.isValid(tooLongCode), true);
 
     // Extend the code with an invalid character and make sure it is invalid.
-    tooLongCode = code + 'U';
+    tooLongCode = '${code}U';
     expect(olc.isValid(tooLongCode), false);
   });
 }
