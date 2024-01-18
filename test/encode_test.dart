@@ -1,4 +1,3 @@
-import 'package:latlong2/latlong.dart';
 import 'package:open_location_code/open_location_code.dart';
 import 'package:test/test.dart';
 import 'utils.dart';
