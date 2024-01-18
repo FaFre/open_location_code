@@ -1,20 +1,5 @@
-/*
- Copyright 2015 Google Inc. All rights reserved.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-*/
-
-import 'package:open_location_code/open_location_code.dart' as olc;
+import 'package:latlong2/latlong.dart';
+import 'package:open_location_code/open_location_code.dart';
 import 'package:test/test.dart';
 import 'utils.dart';
 
@@ -24,8 +9,8 @@ void checkEncodeDecode(String csvLine) {
   final lat = double.parse(elements[0]);
   final lng = double.parse(elements[1]);
   final len = int.parse(elements[2]);
-  final want = elements[3];
-  final got = olc.encode(lat, lng, codeLength: len);
+  final want = PlusCode(elements[3]);
+  final got = PlusCode.encode(LatLng(lat, lng), codeLength: len);
   expect(got, equals(want));
 }
 
@@ -36,18 +21,20 @@ void main() {
 
   test('MaxCodeLength', () {
     // Check that we do not return a code longer than is valid.
-    final code = olc.encode(51.3701125, -10.202665625, codeLength: 1000000);
-    final area = olc.decode(code);
-    expect(code.length, 16);
+    final code = PlusCode.encode(
+      const LatLng(51.3701125, -10.202665625),
+      codeLength: 1000000,
+    );
+    final area = code.decode();
+    expect(code.toString().length, 16);
     expect(area.codeLength, 15);
-    expect(olc.isValid(code), true);
 
     // Extend the code with a valid character and make sure it is still valid.
     var tooLongCode = '${code}W';
-    expect(olc.isValid(tooLongCode), true);
+    expect(() => PlusCode(tooLongCode), returnsNormally);
 
     // Extend the code with an invalid character and make sure it is invalid.
     tooLongCode = '${code}U';
-    expect(olc.isValid(tooLongCode), false);
+    expect(() => PlusCode(tooLongCode), throwsArgumentError);
   });
 }

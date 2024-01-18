@@ -2,7 +2,9 @@
 
 import 'dart:math';
 
-import 'package:open_location_code/open_location_code.dart' as olc;
+import 'package:latlong2/latlong.dart';
+import 'package:open_location_code/open_location_code.dart';
+import 'package:open_location_code/src/plus_code.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -21,14 +23,15 @@ void main() {
       if (length < 10 && length.isOdd) {
         length += 1;
       }
-      final code = olc.encode(lat, lng, codeLength: length);
-      olc.decode(code);
-      testData.add((lat: lat, lng: lng, length: length, code: code));
+      final code = PlusCode.encode(LatLng(lat, lng), codeLength: length);
+      code.decode();
+
+      testData.add((lat: lat, lng: lng, length: length, code: code.toString()));
     }
 
     var stopwatch = Stopwatch()..start();
     for (var i = 0; i < testData.length; i++) {
-      olc.encode(testData[i].lat, testData[i].lng,
+      PlusCode.encode(LatLng(testData[i].lat, testData[i].lng),
           codeLength: testData[i].length);
     }
     var duration = stopwatch.elapsedMicroseconds;
@@ -38,7 +41,7 @@ void main() {
 
     stopwatch = Stopwatch()..start();
     for (var i = 0; i < testData.length; i++) {
-      olc.decode(testData[i].code);
+      PlusCode(testData[i].code).decode();
     }
     duration = stopwatch.elapsedMicroseconds;
     print('Decoding benchmark ${testData.length}, duration $duration usec, '
