@@ -1,6 +1,6 @@
 name: open_location_code
 description: Open Location Codes are short, generated codes that can be used like street addresses, for places where street addresses don't exist.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/FaFre/open_location_code
 
 environment:
